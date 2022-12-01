@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FirestoreChatApp</string>
+    <string name="profile_image_txt">Profile image</string>
+</resources>
