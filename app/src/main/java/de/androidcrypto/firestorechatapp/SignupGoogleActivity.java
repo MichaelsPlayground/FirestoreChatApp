@@ -173,6 +173,7 @@ public class SignupGoogleActivity extends AppCompatActivity implements View.OnCl
         Map<String, Object> update = new HashMap<>();
         update.put(userID, userData);
         // todo check the result on database (just the image url ??)
+        // todo remove map updata
         database.collection("users").document(userID).set(update); //update details to Firestore
 
         /*
