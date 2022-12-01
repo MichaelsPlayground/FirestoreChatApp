@@ -23,7 +23,7 @@ import de.androidcrypto.firestorechatapp.R;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class MessageAdapter extends FirestoreRecyclerAdapter<Message, MessageAdapter.MessageHolder>{
-    private final String TAG = "MessageAdaper";
+    private final String TAG = "MessageAdapter";
     Context context;
     String userId;
     StorageReference storageReference;

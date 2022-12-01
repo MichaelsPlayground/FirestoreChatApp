@@ -75,11 +75,19 @@ public class MainActivity extends AppCompatActivity {
         inputFieldLayout = findViewById(R.id.inputFieldLayout);
         pgBar = findViewById(R.id.loader);
         RecyclerView recyclerView = findViewById(R.id.list);
-        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
-        linearLayoutManager.setStackFromEnd(true);
-        recyclerView.setLayoutManager(linearLayoutManager);
-        //recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        //scrollToBottom(recyclerView);
+        //final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        //linearLayoutManager.setStackFromEnd(true);
+        //recyclerView.setLayoutManager(linearLayoutManager);
+       //recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
+        //LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        //layoutManager.setReverseLayout(true);
+        //layoutManager.setStackFromEnd(true);
+        //recyclerView.setLayoutManager(layoutManager);
+        //recyclerView.setAdapter(mAdapter);
+        //recyclerView.smoothScrollToPosition(mAdapter.getItemCount());
 
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
@@ -101,11 +109,15 @@ public class MainActivity extends AppCompatActivity {
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
                     pgBar.setVisibility(View.GONE);
+                    scrollToBottom(recyclerView);
                 }
             }
         });
         adapter = new MessageAdapter(query, userId, MainActivity.this);
         recyclerView.setAdapter(adapter);
+        //scrollToBottom(recyclerView);
+        //recyclerView.setAdapter(adapter);
+        //recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
         inputFieldLayout.setEndIconOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,6 +129,29 @@ public class MainActivity extends AppCompatActivity {
                 }
                 database.collection("messages").add(new Message(userName, message, userId, 0, null));
                 input.setText("");
+                //recyclerView.scrollToPosition(adapter.getItemCount() - 1);
+                adapter.notifyDataSetChanged();
+                //scrollToBottom(recyclerView);
+            }
+        });
+    }
+
+    private static void scrollToBottom(final RecyclerView recyclerView) {
+        // scroll to last item to get the view of last item
+        final LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        final RecyclerView.Adapter adapter = recyclerView.getAdapter();
+        final int lastItemPosition = adapter.getItemCount() - 1;
+
+        layoutManager.scrollToPositionWithOffset(lastItemPosition, 0);
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                // then scroll to specific offset
+                View target = layoutManager.findViewByPosition(lastItemPosition);
+                if (target != null) {
+                    int offset = recyclerView.getMeasuredHeight() - target.getMeasuredHeight();
+                    layoutManager.scrollToPositionWithOffset(lastItemPosition, offset);
+                }
             }
         });
     }
