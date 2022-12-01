@@ -19,41 +19,30 @@
         android:layout_alignParentBottom="true">
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/inputFieldLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:hint="Type your post"
-            android:visibility="visible"
-            app:boxCornerRadiusBottomEnd="5dp"
-            app:boxCornerRadiusBottomStart="5dp"
-            app:boxCornerRadiusTopEnd="5dp"
-            app:boxCornerRadiusTopStart="5dp"
-            app:counterEnabled="true"
-            app:counterMaxLength="1000"
-            app:endIconContentDescription="Send"
-            app:endIconDrawable="@drawable/ic_baseline_send_24"
-            app:endIconMode="custom"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <com.google.android.material.textfield.TextInputEditText
+            android:layout_weight="7">
+            <MultiAutoCompleteTextView
                 android:id="@+id/input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:inputType="text"
+                android:background="@android:drawable/editbox_background_normal"
+                android:hint="Type your post"
+                android:inputType="textCapSentences|textNoSuggestions|textMultiLine"
                 android:maxLength="1000"
-                android:maxLines="6"
-                android:text=""
-                android:visibility="visible"
-                tools:ignore="KeyboardInaccessibleWidget" />
-
+                android:maxLines="6" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnSend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:clickable="true"
+            android:layout_marginTop="3dp"
+            app:fabSize="mini"
+            android:tint="@android:color/white"
+            android:src="@android:drawable/ic_menu_send" />
 
     </LinearLayout>
 

@@ -40,19 +40,23 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import de.androidcrypto.firestorechatapp.datafiles.Message;
 import de.androidcrypto.firestorechatapp.datafiles.MessageAdapter;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+//public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
     FirebaseAuth auth;
     FirebaseUser user;
     FirebaseFirestore database;
     Query query;
     private FirestoreRecyclerAdapter<Message, MessageAdapter.MessageHolder> adapter;
-    private MultiAutoCompleteTextView input;
+    com.google.android.material.textfield.TextInputEditText input;
+    //private MultiAutoCompleteTextView input;
+    com.google.android.material.textfield.TextInputLayout inputFieldLayout;
     private ProgressBar pgBar;
     private String userId;
     private String userName;
@@ -65,12 +69,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FloatingActionButton btnSend = findViewById(R.id.btnSend);
-        btnSend.setOnClickListener(this);
+        //FloatingActionButton btnSend = findViewById(R.id.btnSend);
+        //btnSend.setOnClickListener(this);
         input = findViewById(R.id.input);
+        inputFieldLayout = findViewById(R.id.inputFieldLayout);
         pgBar = findViewById(R.id.loader);
         RecyclerView recyclerView = findViewById(R.id.list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        linearLayoutManager.setStackFromEnd(true);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        //recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
 
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
@@ -97,8 +106,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         adapter = new MessageAdapter(query, userId, MainActivity.this);
         recyclerView.setAdapter(adapter);
+
+        inputFieldLayout.setEndIconOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String message = input.getText().toString();
+                if(TextUtils.isEmpty(message)){
+                    Toast.makeText(MainActivity.this, "Post is post", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                database.collection("messages").add(new Message(userName, message, userId, 0, null));
+                input.setText("");
+            }
+        });
     }
 
+    /* used for FloatingButton
     @Override
     public void onClick(View v) {
         if(v.getId()==R.id.btnSend){
@@ -111,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             input.setText("");
         }
     }
-
+     */
 
     @Override
     public void onStart() {
