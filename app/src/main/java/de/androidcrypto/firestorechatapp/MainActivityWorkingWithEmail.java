@@ -45,7 +45,7 @@ import de.androidcrypto.firestorechatapp.datafiles.Message;
 import de.androidcrypto.firestorechatapp.datafiles.MessageAdapter;
 
 //public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-public class MainActivity extends AppCompatActivity {
+public class MainActivityWorkingWithEmail extends AppCompatActivity {
     FirebaseAuth auth;
     FirebaseUser user;
     FirebaseFirestore database;
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
-        Log.i("MainActivity", " this os onCreate: " + user);
+        Log.i("MainAcivity", " this os onCreate: " + user);
 
         //Check if user has signed in before else redirect to login page
         if (user == null){
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        adapter = new MessageAdapter(query, userId, MainActivity.this);
+        adapter = new MessageAdapter(query, userId, MainActivityWorkingWithEmail.this);
         recyclerView.setAdapter(adapter);
 
         inputFieldLayout.setEndIconOnClickListener(new View.OnClickListener() {
@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String message = input.getText().toString();
                 if(TextUtils.isEmpty(message)){
-                    Toast.makeText(MainActivity.this, "Post is post", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivityWorkingWithEmail.this, "Post is post", Toast.LENGTH_LONG).show();
                     return;
                 }
                 database.collection("messages").add(new Message(userName, message, userId, 0, null));
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
         /*
         Build a dialogView for user to set profile image
          */
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityWorkingWithEmail.this);
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.profile_image, null);
         builder.setView(dialogView);
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 //Use android-image-cropper library to grab and crop image
                 CropImage.activity()
                         .setFixAspectRatio(true)
-                        .start(MainActivity.this);
+                        .start(MainActivityWorkingWithEmail.this);
             }
         });
     }

@@ -27,6 +27,8 @@
         </activity>
         <activity android:name=".SignupActivity"
             android:label="Sign up"/>
+        <activity android:name=".SignupGoogleActivity"
+            android:label="Sign up a Google account"/>
         <activity android:name=".LoginActivity"
             android:label="Login"/>
         <activity

@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,15 +39,24 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import de.androidcrypto.firestorechatapp.datafiles.Message;
 import de.androidcrypto.firestorechatapp.datafiles.MessageAdapter;
 
 //public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-public class MainActivity extends AppCompatActivity {
+public class MainActivityNotWorkingFbUiAuth extends AppCompatActivity {
     FirebaseAuth auth;
+
+    public static final int RC_SIGN_IN = 1;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+    List<AuthUI.IdpConfig> providers = Arrays.asList(
+            new AuthUI.IdpConfig.EmailBuilder().build(),
+            new AuthUI.IdpConfig.GoogleBuilder().build());
+
     FirebaseUser user;
     FirebaseFirestore database;
     Query query;
@@ -55,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     //private MultiAutoCompleteTextView input;
     com.google.android.material.textfield.TextInputLayout inputFieldLayout;
     private ProgressBar pgBar;
+    RecyclerView recyclerView;
     private String userId;
     private String userName;
     Uri filePath;
@@ -76,21 +87,94 @@ public class MainActivity extends AppCompatActivity {
         mManager = new LinearLayoutManager(this);
         mManager.setReverseLayout(false);
 
-        RecyclerView recyclerView = findViewById(R.id.list);
+        recyclerView = findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         recyclerView.setLayoutManager(mManager);
 
+        // todo enable persistence on Firestore
+
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
-        Log.i("MainActivity", " this os onCreate: " + user);
+        Log.i("MainAcivity", " this os onCreate: " + user);
 
         //Check if user has signed in before else redirect to login page
         if (user == null){
+
+            mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+                @Override
+                public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                    FirebaseUser user = firebaseAuth.getCurrentUser();
+                    if (user != null) {
+                        Toast.makeText(MainActivityNotWorkingFbUiAuth.this, "User Signed In", Toast.LENGTH_SHORT).show();
+                        //signedInUser.setText(user.getEmail() + "\nDisplayName: " + user.getDisplayName());
+                        //activeButtonsWhileUserIsSignedIn(true);
+                        runSetupAfterSignIn();
+                    } else {
+
+                    }
+                }
+            };
+
+            startActivityForResult(
+                    AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setIsSmartLockEnabled(true)
+                            .setAvailableProviders(providers)
+                            .setTheme(R.style.Theme_FirestoreChatApp)
+                            .build(),
+                    RC_SIGN_IN
+            );
+
+            /*
             startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
+
+             */
         }
 
+        if (user != null) {
+
+            userId = user.getUid();
+            userName = user.getDisplayName();
+            database = FirebaseFirestore.getInstance();
+            query = database.collection("messages").orderBy("messageTime");
+            query.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
+                    if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                        pgBar.setVisibility(View.GONE);
+
+                        // Scroll to bottom on new messages
+                        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                            @Override
+                            public void onItemRangeInserted(int positionStart, int itemCount) {
+                                mManager.smoothScrollToPosition(recyclerView, null, adapter.getItemCount());
+                            }
+                        });
+                    }
+                }
+            });
+            adapter = new MessageAdapter(query, userId, MainActivityNotWorkingFbUiAuth.this);
+            recyclerView.setAdapter(adapter);
+
+            inputFieldLayout.setEndIconOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    String message = input.getText().toString();
+                    if (TextUtils.isEmpty(message)) {
+                        Toast.makeText(MainActivityNotWorkingFbUiAuth.this, "Post is post", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    database.collection("messages").add(new Message(userName, message, userId, 0, null));
+                    input.setText("");
+                    adapter.notifyDataSetChanged();
+                }
+            });
+        }
+    }
+
+    private void runSetupAfterSignIn() {
         userId = user.getUid();
         userName = user.getDisplayName();
         database = FirebaseFirestore.getInstance();
@@ -111,15 +195,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        adapter = new MessageAdapter(query, userId, MainActivity.this);
+        adapter = new MessageAdapter(query, userId, MainActivityNotWorkingFbUiAuth.this);
         recyclerView.setAdapter(adapter);
 
         inputFieldLayout.setEndIconOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String message = input.getText().toString();
-                if(TextUtils.isEmpty(message)){
-                    Toast.makeText(MainActivity.this, "Post is post", Toast.LENGTH_LONG).show();
+                if (TextUtils.isEmpty(message)) {
+                    Toast.makeText(MainActivityNotWorkingFbUiAuth.this, "Post is post", Toast.LENGTH_LONG).show();
                     return;
                 }
                 database.collection("messages").add(new Message(userName, message, userId, 0, null));
@@ -127,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
+
     }
 
     /* used for FloatingButton
@@ -182,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
         /*
         Build a dialogView for user to set profile image
          */
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivityNotWorkingFbUiAuth.this);
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.profile_image, null);
         builder.setView(dialogView);
@@ -206,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
                 //Use android-image-cropper library to grab and crop image
                 CropImage.activity()
                         .setFixAspectRatio(true)
-                        .start(MainActivity.this);
+                        .start(MainActivityNotWorkingFbUiAuth.this);
             }
         });
     }
