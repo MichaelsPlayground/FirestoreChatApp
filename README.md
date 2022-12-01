@@ -11,6 +11,7 @@ for storing the chats and user data and **Firebase Storage** for storing the use
 
 You need to setup your own Firebase service via Firebase console.
 
+The chat is a **group chat** and not a "1:1" chat.
 
 Original description:
 
