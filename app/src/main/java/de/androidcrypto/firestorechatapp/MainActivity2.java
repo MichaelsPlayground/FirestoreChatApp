@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.MultiAutoCompleteTextView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -26,7 +25,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.EventListener;
@@ -40,7 +38,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.theartofdev.edmodo.cropper.CropImage;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +45,7 @@ import de.androidcrypto.firestorechatapp.datafiles.Message;
 import de.androidcrypto.firestorechatapp.datafiles.MessageAdapter;
 
 //public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-public class MainActivity extends AppCompatActivity {
+public class MainActivity2 extends AppCompatActivity {
     FirebaseAuth auth;
     FirebaseUser user;
     FirebaseFirestore database;
@@ -63,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
     Uri filePath;
     ImageView imgProfilePic;
 
-    private LinearLayoutManager mManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,13 +71,20 @@ public class MainActivity extends AppCompatActivity {
         input = findViewById(R.id.input);
         inputFieldLayout = findViewById(R.id.inputFieldLayout);
         pgBar = findViewById(R.id.loader);
-
-        mManager = new LinearLayoutManager(this);
-        mManager.setReverseLayout(false);
-
         RecyclerView recyclerView = findViewById(R.id.list);
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        recyclerView.setLayoutManager(mManager);
+        //scrollToBottom(recyclerView);
+        //final LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
+        //linearLayoutManager.setStackFromEnd(true);
+        //recyclerView.setLayoutManager(linearLayoutManager);
+       //recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
+        //LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        //layoutManager.setReverseLayout(true);
+        //layoutManager.setStackFromEnd(true);
+        //recyclerView.setLayoutManager(layoutManager);
+        //recyclerView.setAdapter(mAdapter);
+        //recyclerView.smoothScrollToPosition(mAdapter.getItemCount());
 
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
@@ -103,26 +106,22 @@ public class MainActivity extends AppCompatActivity {
             public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                 if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
                     pgBar.setVisibility(View.GONE);
-
-                    // Scroll to bottom on new messages
-                    adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-                        @Override
-                        public void onItemRangeInserted(int positionStart, int itemCount) {
-                            mManager.smoothScrollToPosition(recyclerView, null, adapter.getItemCount());
-                        }
-                    });
+                    scrollToBottom(recyclerView);
                 }
             }
         });
-        adapter = new MessageAdapter(query, userId, MainActivity.this);
+        adapter = new MessageAdapter(query, userId, MainActivity2.this);
         recyclerView.setAdapter(adapter);
+        //scrollToBottom(recyclerView);
+        //recyclerView.setAdapter(adapter);
+        //recyclerView.scrollToPosition(adapter.getItemCount() - 1);
 
         inputFieldLayout.setEndIconOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String message = input.getText().toString();
                 if(TextUtils.isEmpty(message)){
-                    Toast.makeText(MainActivity.this, "Post is post", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity2.this, "Post is post", Toast.LENGTH_LONG).show();
                     return;
                 }
                 database.collection("messages").add(new Message(userName, message, userId, 0, null));
@@ -130,6 +129,26 @@ public class MainActivity extends AppCompatActivity {
                 //recyclerView.scrollToPosition(adapter.getItemCount() - 1);
                 adapter.notifyDataSetChanged();
                 //scrollToBottom(recyclerView);
+            }
+        });
+    }
+
+    private static void scrollToBottom(final RecyclerView recyclerView) {
+        // scroll to last item to get the view of last item
+        final LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        final RecyclerView.Adapter adapter = recyclerView.getAdapter();
+        final int lastItemPosition = adapter.getItemCount() - 1;
+
+        layoutManager.scrollToPositionWithOffset(lastItemPosition, 0);
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                // then scroll to specific offset
+                View target = layoutManager.findViewByPosition(lastItemPosition);
+                if (target != null) {
+                    int offset = recyclerView.getMeasuredHeight() - target.getMeasuredHeight();
+                    layoutManager.scrollToPositionWithOffset(lastItemPosition, offset);
+                }
             }
         });
     }
@@ -189,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         /*
         Build a dialogView for user to set profile image
          */
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.profile_image, null);
         builder.setView(dialogView);
@@ -213,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                 //Use android-image-cropper library to grab and crop image
                 CropImage.activity()
                         .setFixAspectRatio(true)
-                        .start(MainActivity.this);
+                        .start(MainActivity2.this);
             }
         });
     }
